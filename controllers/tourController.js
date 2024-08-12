@@ -1,5 +1,11 @@
 const Tour=require('../models/tourModel.js')
 
+exports.aliasTopTours=(req,res,next)=>{
+  req.query.limit="5"
+  req.query.sort='-ratingAverage,price'
+  req.query.fields="name,price,ratingAverage,summary,difficulty"
+  next()
+}
 exports.checkBody = (req, res, next) => {
   if (!req.body.name || !req.body.price) {
     return res.status(400).json({
