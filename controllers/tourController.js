@@ -20,7 +20,25 @@ exports.getAllTours = async (req, res) => {
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g,match=>`$${match}`)
     queryStr = JSON.parse(queryStr);
 
-    const query = Tour.find(queryStr);
+        let query = Tour.find(queryStr);
+    if(req.query.sort){
+      const sortBy = req.query.sort.split(',').join(' ')
+      query=query.sort(sortBy)
+    }else{
+      query = query.sort('-createdAt');
+    }
+   if (req.query.fields) {
+     const selectedFields = req.query.fields.split(',').join(' ');
+     query = query.select(selectedFields);
+   }
+    const page=req.query.page * 1  ||1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page-1)* limit;
+    query.skip(skip).limit(limit)
+    if(req.query.page){
+      const numTours=await Tour.countDocuments();
+      if(skip >= numTours) throw new Error('the page doesn`t exist ')
+    }
     const tours=await query;
     res.status(200).json({
       status: 'success',
